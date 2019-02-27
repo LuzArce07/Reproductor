@@ -35,7 +35,10 @@ namespace Reproductor
         //Nuestra comunicación con la tarjeta de sonido
         WaveOutEvent output;
 
-        DispatcherTimer timer; 
+        DispatcherTimer timer;
+
+        bool dragging = false;
+
 
         public MainWindow()
         {
@@ -58,7 +61,13 @@ namespace Reproductor
             {
                 lblTiempoInicial.Text = reader.CurrentTime.ToString().Substring(0, 8);
 
+                if (!dragging)
+                {
+                    sldReproduccion.Value = reader.CurrentTime.TotalSeconds;
+                }
+                
             }
+
         }
 
         private void LlenarComboSalida()
@@ -98,7 +107,8 @@ namespace Reproductor
                 btnReproducir.IsEnabled = false;
 
 
-            } else
+            }
+            else
             {
 
                 reader = new AudioFileReader(txtRutaArchivo.Text);
@@ -117,6 +127,9 @@ namespace Reproductor
 
                 lblTiempoTotal.Text = reader.TotalTime.ToString().Substring(0, 8);
                 lblTiempoInicial.Text = reader.CurrentTime.ToString().Substring(0, 8);
+
+                sldReproduccion.Maximum = reader.TotalTime.TotalSeconds;
+                sldReproduccion.Value = reader.CurrentTime.TotalSeconds;
 
                 timer.Start();
 
@@ -158,6 +171,26 @@ namespace Reproductor
                 btnDetener.IsEnabled = false;
                 
             }
+        }
+
+        private void sldReproduccion_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+
+            dragging = true;
+
+        }
+
+        private void sldReproduccion_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+
+            dragging = false;
+            if (reader != null && output != null && output.PlaybackState != PlaybackState.Stopped)
+            {
+
+                reader.CurrentTime = TimeSpan.FromSeconds(sldReproduccion.Value);
+
+            }
+
         }
 
     }
